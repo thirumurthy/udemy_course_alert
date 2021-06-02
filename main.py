@@ -7,6 +7,7 @@
 ############## Scraper
 import json
 import logging
+import re
 import sys
 import threading
 import traceback
@@ -202,12 +203,40 @@ def create_scrape_obj():
     return funcs
 
 
-def send_tg_msg(link):
+def escape_markdown(text: str, version: int = 1, entity_type: str = None) -> str:
+    """
+    Helper function to escape telegram markup symbols.
+    Args:
+        text (:obj:`str`): The text.
+        version (:obj:`int` | :obj:`str`): Use to specify the version of telegrams Markdown.
+            Either ``1`` or ``2``. Defaults to ``1``.
+        entity_type (:obj:`str`, optional): For the entity types ``PRE``, ``CODE`` and the link
+            part of ``TEXT_LINKS``, only certain characters need to be escaped in ``MarkdownV2``.
+            See the official API documentation for details. Only valid in combination with
+            ``version=2``, will be ignored else.
+    """
+    if int(version) == 1:
+        escape_chars = r'_*`['
+    elif int(version) == 2:
+        if entity_type in ['pre', 'code']:
+            escape_chars = r'\`'
+        elif entity_type == 'text_link':
+            escape_chars = r'\)'
+        else:
+            escape_chars = r'_*[]()~`>#+-=|{}.!'
+    else:
+        raise ValueError('Markdown version must be either 1 or 2!')
+
+    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
+
+def send_tg_msg(link, course_name):
     try:
 
         post_data = {
             "chat_id": chat_id,
-            "text": tg_message + link,
+            "text": tg_message.replace('URL', escape_markdown(link, 2)).replace('Course_Name',
+                                                                                escape_markdown(course_name, 2)),
             "parse_mode": "MarkdownV2",
             "reply_markup": json.dumps({
                 "inline_keyboard": [[
@@ -232,12 +261,13 @@ def auto(list_st):
         link = tl[1]
         print(link)
         if not sql.check_url_exists(link):
-            send_tg_msg(link)
+            send_tg_msg(link, tl[0])
             sql.add_udemy(1, link)
 
 
 if __name__ == '__main__':
     try:
+        send_tg_msg("http://google.com", "Google")
         if len(sys.argv) > 0:
             sql.unit_db(True)
         links_ls = []
