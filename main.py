@@ -267,7 +267,7 @@ def auto(list_st):
 
 if __name__ == '__main__':
     try:
-        send_tg_msg("http://google.com", "Google")
+        # send_tg_msg("http://google.com", "Google")
         if len(sys.argv) > 0:
             sql.unit_db(True)
         links_ls = []
