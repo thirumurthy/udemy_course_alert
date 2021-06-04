@@ -26,6 +26,7 @@ logging.basicConfig(
     level=logging.INFO  # CRITICAL ERROR WARNING  INFO    DEBUG    NOTSET
 )
 
+processed_links = []
 
 def discudemy():
     global du_links
@@ -259,48 +260,52 @@ def auto(list_st):
     for index, link in enumerate(list_st):
         tl = link.split("|:|")
         link = tl[1]
-        print(link)
         if not sql.check_url_exists(link):
             send_tg_msg(link, tl[0])
             sql.add_udemy(1, link)
+            print("Added link :"+link)
+        else:
+            print("link already exists : " + link)
 
 
 if __name__ == '__main__':
     try:
         # send_tg_msg("http://google.com", "Google")
-        if len(sys.argv) > 0:
-            sql.unit_db(True)
+        if len(sys.argv) > 1:
+            if int(sys.argv[1]) == 99:
+                sql.unit_db(True)
+                print("DB Cleaned..")
         links_ls = []
         all_functions = create_scrape_obj()
         for key in all_functions:
             all_functions[key].start()
         for t in all_functions:
             all_functions[t].join()
-            try:  # du_links
-                links_ls += du_links
-            except:
-                pass
-            try:  # uf_links
-                links_ls += uf_links
-            except:
-                pass
-            try:  # tb_links
-                links_ls += tb_links
-            except:
-                pass
-            try:  # rd_links
-                links_ls += rd_links
-            except:
-                pass
-            try:  # cv_links
-                links_ls += cv_links
-            except:
-                pass
-            try:  # idc_links
-                links_ls += idc_links
-            except:
-                pass
+        try:  # du_links
+            links_ls += du_links
+        except:
+            pass
+        try:  # uf_links
+            links_ls += uf_links
+        except:
+            pass
+        try:  # tb_links
+            links_ls += tb_links
+        except:
+            pass
+        try:  # rd_links
+            links_ls += rd_links
+        except:
+            pass
+        try:  # cv_links
+            links_ls += cv_links
+        except:
+            pass
+        try:  # idc_links
+            links_ls += idc_links
+        except:
+            pass
 
-            auto(links_ls)
+        auto(links_ls)
     except:
         e = traceback.format_exc()

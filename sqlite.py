@@ -26,7 +26,7 @@ def unit_db(force: bool = False):
         c.execute('''
         CREATE TABLE IF NOT EXISTS udemy (
         id             INTEGER PRIMARY KEY,
-        site        INTEGER NOT NULL UNIQUE ,
+        site        INTEGER NOT NULL ,
         url      VARCHAR (255) NULL
        )
         ''')
@@ -55,7 +55,7 @@ def check_url_exists(url: str):
     try:
         conn = get_connection()
         c = conn.cursor()
-        c.execute('SELECT url FROM udemy WHERE url=?', (url,))
+        c.execute('SELECT * FROM udemy WHERE url=?', (url,))
         conn.commit()
         res = c.fetchone()
         if int(res[0]) > -1:
